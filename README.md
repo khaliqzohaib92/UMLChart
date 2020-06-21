@@ -11,7 +11,7 @@ In UMLChart user will be able to:
 
 ## Wirefarmes
 <h1 align="center">
-  <img src="https://github.com/khaliqzohaib92/UMLChart/wireframe.jpg" width="600" height="auto" align="center"/>
+  <img src="https://github.com/khaliqzohaib92/UMLChart/blob/master/umlchart.JPG" width="600" height="auto" align="center"/>
 </h1>
 
 ## Build with
