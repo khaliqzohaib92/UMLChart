@@ -17,3 +17,4 @@ In UMLChart user will be able to:
 ## Build with
 - HTML/CSS
 - Javascipt
+- Paper.js
