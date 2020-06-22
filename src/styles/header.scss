@@ -1,0 +1,36 @@
+.header-main{
+}
+
+.header-nav-main{
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    height: fit-content;
+    padding: 20px 40px;
+    background-color: $themeColor;
+    border-bottom: 1px solid gainsboro;
+}
+
+.header-nav-title{
+    font-size: 2em;
+}
+
+.header-nav-links{
+    display: flex;
+}
+
+.header-nav-link-linkedin{
+    margin-left: 20px;
+}
+
+.header-nav-links > li{
+    list-style: none;
+    transition-duration: 0.2s;
+    transition: ease;
+    cursor: pointer;
+}
+
+.header-nav-links > li:hover{
+    transform:  scale(1.1);
+}
+
