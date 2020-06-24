@@ -8,6 +8,7 @@ class MyCanvas {
     this.strokeColor = 'black';
     this.fillColor = "white";
     this.defaultSize = [100,100];
+    this.currentActiveItem = null;
 
     // sets up paper js on canvas
     paper.setup(canvasElement);
@@ -22,14 +23,14 @@ class MyCanvas {
     this.getCenterPosition = this.getCenterPosition.bind(this);
     this.drawTextShape = this.drawTextShape.bind(this);
     this.onToolDoubleClick = this.onToolDoubleClick.bind(this);
-    this.onToolClick = this.onToolClick.bind(this);
+    this.onToolMouseDown = this.onToolMouseDown.bind(this);
     this.setOneItemSelected = this.setOneItemSelected.bind(this);
     this.onItemDrag = this.onItemDrag.bind(this);
 
     
     //tool level clicklistener
     tool.onDoubleClick = this.onToolDoubleClick;
-    tool.onMouseDown = this.onToolClick;
+    tool.onMouseDown = this.onToolMouseDown;
     tool.onItemDrag = this.onItemDrag;
   }
 
@@ -97,48 +98,32 @@ class MyCanvas {
       if(textShape.selected){
         new Modal((updatedText)=>{
           textShape.content = updatedText;
-          textShape.selected = true;
         }).show();
       }
     }
   }
 
-  // return center position of canvas
-  getCenterPosition(){
-    return {x: this.canvasElement.clientWidth/2, y:this.canvasElement.clientHeight/2};
-  }
-
-  // helper to set stroke and fill
-  setStrokeAndFill(item){
-    item.strokeColor = this.strokeColor;
-    item.fillColor = this.fillColor;
-  }
+  
 
   onItemDrag(e){
-    let activeChild = null;
-    this.project.activeLayer.children.forEach((child)=>{
-        if(child.selected)
-          activeChild = child;
-    })
+    if(this.currentActiveItem == null) return;
 
-    if(activeChild == null) return;
-
-    activeChild.position = e.point;  
+    this.currentActiveItem.position = e.point;  
   }
 
-  //on canvas double click
+  //on tool double click
   onToolDoubleClick(e){
     if(e.ctrlKey) {
       this.drawTextShape({x: e.layerX,y: e.layerY}, "Add Text");
     }
   }
 
-  //on canvas click
-  onToolClick(e){
+  //on tool click
+  onToolMouseDown(e){
     this.setOneItemSelected(e);
   }
 
-  //select element one selected true
+  //toggle item selecteion and saving currentActiveItem
   setOneItemSelected(e){
 
     const position = {x: e.layerX, y: e.layerY};
@@ -164,7 +149,21 @@ class MyCanvas {
         clickedItems[i].selected = false;
       }
     }
+    this.currentActiveItem = latestItem;
     latestItem.selected = true;
+  }
+
+
+  //----------------------- general methods --------------------------------------
+  // return center position of canvas
+  getCenterPosition(){
+    return {x: this.canvasElement.clientWidth/2, y:this.canvasElement.clientHeight/2};
+  }
+
+  // helper to set stroke and fill
+  setStrokeAndFill(item){
+    item.strokeColor = this.strokeColor;
+    item.fillColor = this.fillColor;
   }
 }
 
