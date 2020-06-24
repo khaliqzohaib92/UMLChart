@@ -1,5 +1,5 @@
 import { SHAPES } from "../util/constants";
-import paper, { Project, Path, Group, PointText } from 'paper';
+import paper, { Project, Path, Group, PointText, tool } from 'paper';
 import Modal from "../modal/modal";
 class MyCanvas {
   constructor(canvasElement) {
@@ -21,15 +21,16 @@ class MyCanvas {
     this.drawClassShape = this.drawClassShape.bind(this);
     this.getCenterPosition = this.getCenterPosition.bind(this);
     this.drawTextShape = this.drawTextShape.bind(this);
-    this.onCanvasDoubleClick = this.onCanvasDoubleClick.bind(this);
-    this.onCanvasClick = this.onCanvasClick.bind(this);
+    this.onToolDoubleClick = this.onToolDoubleClick.bind(this);
+    this.onToolClick = this.onToolClick.bind(this);
     this.setOneItemSelected = this.setOneItemSelected.bind(this);
     this.onItemDrag = this.onItemDrag.bind(this);
 
     
-    //canvas level clicklistener
-    canvasElement.addEventListener('dblclick',this.onCanvasDoubleClick)
-    canvasElement.addEventListener('mousedown',this.onCanvasClick)
+    //tool level clicklistener
+    tool.onDoubleClick = this.onToolDoubleClick;
+    tool.onMouseDown = this.onToolClick;
+    tool.onItemDrag = this.onItemDrag;
   }
 
   drawShapes(shapeName){
@@ -81,8 +82,6 @@ class MyCanvas {
     this.setStrokeAndFill(methodNameRectangle);
     groupClass.addChild(methodNameRectangle);
 
-    //sets item drag listener
-    groupClass.onMouseDrag = this.onItemDrag;
   }
 
   // adds text to the clicked area
@@ -102,10 +101,6 @@ class MyCanvas {
         }).show();
       }
     }
-
-    
-    //sets item drag listener
-    textShape.onMouseDrag = this.onItemDrag;
   }
 
   // return center position of canvas
@@ -131,18 +126,15 @@ class MyCanvas {
     activeChild.position = e.point;  
   }
 
-
-  //------------------------canvas listeners------------------------------------------------------
-
   //on canvas double click
-  onCanvasDoubleClick(e){
+  onToolDoubleClick(e){
     if(e.ctrlKey) {
       this.drawTextShape({x: e.layerX,y: e.layerY}, "Add Text");
     }
   }
 
   //on canvas click
-  onCanvasClick(e){
+  onToolClick(e){
     this.setOneItemSelected(e);
   }
 
