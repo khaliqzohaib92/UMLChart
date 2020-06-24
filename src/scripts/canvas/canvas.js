@@ -3,7 +3,7 @@ import paper, { Project, Path, Group, PointText, tool, Tool, Rectangle, Point } 
 import Modal from "../modal/modal";
 
 const boundsIdentifierObj = {
-  1: 'topLeft', 2: 'topRight', 3: 'bottomRight', 4: 'bottomLeft'
+  1: 'topLeft', 2: 'topRight', 3: 'bottomRight', 0: 'bottomLeft'
 }
 class MyCanvas {
   constructor(canvasElement) {
@@ -13,6 +13,7 @@ class MyCanvas {
     this.fillColor = "white";
     this.defaultSize = [100,100];
     this.currentActiveItem = null;
+    this.lineDefaultWidth = 3;
 
     // sets up paper js on canvas
     paper.setup(canvasElement);
@@ -28,18 +29,22 @@ class MyCanvas {
     //binds methods
     this.drawShapes = this.drawShapes.bind(this);
     this.drawClassShape = this.drawClassShape.bind(this);
+    this.drawLineShape = this.drawLineShape.bind(this);
     this.getCenterPosition = this.getCenterPosition.bind(this);
     this.drawTextShape = this.drawTextShape.bind(this);
     this.onToolDoubleClick = this.onToolDoubleClick.bind(this);
     this.onToolMouseDown = this.onToolMouseDown.bind(this);
+    this.onToolMouseUp = this.onToolMouseUp.bind(this);
     this.setOneItemSelected = this.setOneItemSelected.bind(this);
     this.onToolDrag = this.onToolDrag.bind(this);
     this.onToolKeyDown = this.onToolKeyDown.bind(this);
 
     //tool level clicklistener
     this.tool.onMouseDown = this.onToolMouseDown;
+    this.tool.onMouseUp = this.onToolMouseUp;
     this.tool.onMouseDrag = this.onToolDrag;
     this.tool.onKeyDown = this.onToolKeyDown;
+
      //add double click listener on canvas because tool have no double click listener
     this.canvasElement.addEventListener("dblclick", this.onToolDoubleClick);
 
@@ -51,6 +56,13 @@ class MyCanvas {
       case SHAPES.CLASS:
         this.drawClassShape();
         break;
+      case SHAPES.LINE:  
+        const startPoint = new Point(this.centerPosition.x-50, this.centerPosition.y);
+        const endPoint = new Point(this.centerPosition.x+50, this.centerPosition.y);
+        
+        console.log('initial start: '+startPoint);
+        console.log('initial end: '+endPoint);
+        this.drawLineShape(startPoint, endPoint);
       default:
         break;
     }
@@ -73,12 +85,6 @@ class MyCanvas {
     const classNameRectangle = new Path.Rectangle(firstRectX, firstRectY, fristRectWidth, firstRectHeight);
     this.setStrokeAndFill(classNameRectangle);
     groupClass.addChild(classNameRectangle);
-
-    // classNameRectangle.onDoubleClick=(e)=>{
-    //   e.stopPropagation();
-    //   groupClass.addChild(this.drawTextShape(e.point, 'Add Text'));
-    // }
-
 
     //create varaible rectangle
     const secRectX = firstRectX;
@@ -121,6 +127,48 @@ class MyCanvas {
     return textShape
   }
 
+  drawLineShape(startPoint, endPoint){
+    //draw arrow shape
+    const arrowShape = new Path();
+    arrowShape.strokeColor = 'black';
+    arrowShape.strokeWidth = 3;
+    let leftEdge, rightEdge;
+    arrowShape.add(startPoint);
+    if(startPoint.y !== endPoint.y){
+      arrowShape.add(new Point(endPoint.x, startPoint.y));
+    }
+    arrowShape.add(endPoint);
+    
+    if(startPoint.y > endPoint.y){
+      leftEdge = new Point(endPoint.x-10, endPoint.y+10);
+      rightEdge = new Point(endPoint.x+10, endPoint.y+10);
+      arrowShape.add(leftEdge)
+      arrowShape.add(new Point(endPoint));
+      arrowShape.add(rightEdge)
+    }else
+    if(startPoint.y < endPoint.y){
+      leftEdge = new Point(endPoint.x-10, endPoint.y-10);
+      rightEdge = new Point(endPoint.x+10, endPoint.y-10);
+      arrowShape.add(leftEdge)
+      arrowShape.add(new Point(endPoint));
+      arrowShape.add(rightEdge)
+    } else{
+      leftEdge = new Point(endPoint.x-10, endPoint.y-10);
+      rightEdge = new Point(endPoint.x-10, endPoint.y+10);
+      arrowShape.add(leftEdge);
+      arrowShape.add(endPoint);
+      arrowShape.add(rightEdge);
+    }
+
+    arrowShape.data.type = 'line';
+    arrowShape.data.start = startPoint;
+    arrowShape.data.end = endPoint;
+    arrowShape.data.leftEdge = leftEdge;
+    arrowShape.data.rightEdge = rightEdge;
+
+    return arrowShape;
+  }
+
   
   //on tool click
   onToolMouseDown(e){
@@ -131,12 +179,12 @@ class MyCanvas {
     if(!this.currentActiveItem) return;
 
     //clearing currentActiveItem data to fix the issue of unintended moves
-    this.currentActiveItem.data = null;
+    this.currentActiveItem.data.state = null;
 
     if(this.currentActiveItem.contains(e.point)){
       this.currentActiveItem.data.state = 'move'
     }
-
+    // debugger
     //set items data based on item mouseDown point
     if(this.currentActiveItem.hitTest(e.point, {bounds: true, tolerance: 5})){
       //get bounds of the shape
@@ -146,7 +194,6 @@ class MyCanvas {
       for(let[key, value] of Object.entries(boundsIdentifierObj)){
         if(bounds[value].isClose(e.point, 5)){
           const oppositeBound = bounds[boundsIdentifierObj[(parseInt(key) + 2) % 4]];
-
           //get opposite bound point
           const oppositePoint = new Point(oppositeBound.x,oppositeBound.y);
           //get current bound point
@@ -162,16 +209,62 @@ class MyCanvas {
     }
   }
 
+  //on mouse up
+  onToolMouseUp(e){
+    // if(!this.currentActiveItem) return null;
+    // if(this.currentActiveItem.data.type === 'line'){
+    //   const leftEdge = this.currentActiveItem.data.leftEdge;
+    //   const rightEdge = this.currentActiveItem.data.rightEdge;
+    // this.project.activeLayer.children.forEach(child=>{
+    //   if((child.contains(leftEdge) && child.data.type !== 'line')){
+    //     const res = child.hitTest(leftEdge, {bounds: true, tolerance: 20})
+    //     debugger
+    //   }
+    // });
+    // }
+  }
+
   //item drag listener
   onToolDrag(e){
+    // debugger
     if(this.currentActiveItem == null) return;
 
-    if(this.currentActiveItem.data.state === 'move'){
+    if(this.currentActiveItem.data.state === 'move'  && this.currentActiveItem.data.type !== 'line'){
       this.currentActiveItem.position = e.point;  
-    }else
-    if(this.currentActiveItem.data.state === 'resize'){
+    } else
+    if(this.currentActiveItem.data.state === 'resize' && this.currentActiveItem.data.type !== 'line'){
       this.currentActiveItem.selected = true
-      this.currentActiveItem.bounds = new Rectangle(this.currentActiveItem.data.from, e.point);
+      this.currentActiveItem.bounds = new Rectangle(
+        new Point(this.currentActiveItem.data.from.x, 
+        this.currentActiveItem.data.from.y), 
+        new Point(e.point.x, 
+        e.point.y));
+    } else
+    if(this.currentActiveItem.data.type === 'line' && this.currentActiveItem.selected){
+      const startPoint = this.currentActiveItem.data.start;
+      const endPoint = this.currentActiveItem.data.end;
+      const closeToTail = e.point.isClose(startPoint, 20);
+      const closeToleftEdge = e.point.isClose(endPoint, 20);
+
+      if(closeToTail){
+        this.currentActiveItem.remove();
+        this.currentActiveItem = this.drawLineShape(e.point, endPoint);
+      }else       
+      if(closeToleftEdge){
+        this.currentActiveItem.remove();
+        this.currentActiveItem = this.drawLineShape(startPoint, e.point);
+      }
+
+      //move the line logic
+      if(!closeToleftEdge && !closeToTail){
+        const segmentCount =  this.currentActiveItem.segments.length;
+        this.currentActiveItem.position = e.point;
+        this.currentActiveItem.data.start = this.currentActiveItem.segments[0].point;
+        this.currentActiveItem.data.end = this.currentActiveItem.segments[segmentCount-2].point;
+        this.currentActiveItem.data.leftEdge = this.currentActiveItem.segments[segments-3].point;
+        this.currentActiveItem.data.rightEdge = this.currentActiveItem.segments[segments-1].point;
+      }
+      this.currentActiveItem.selected = true;
     }
   }
 
@@ -186,7 +279,6 @@ class MyCanvas {
 
   //toggle item selecteion and saving currentActiveItem
   setOneItemSelected(e){
-
     const position = e.point;
     let clickedItems = []
     this.project.activeLayer.children.forEach(child=>{
@@ -216,6 +308,8 @@ class MyCanvas {
 
   // keyboard methods
   onToolKeyDown(e){
+    if(!this.currentActiveItem) return;
+
     const position = this.currentActiveItem.position;
     const step = 5;
     switch(e.key){
@@ -239,7 +333,7 @@ class MyCanvas {
   //----------------------- general methods --------------------------------------
   // return center position of canvas
   getCenterPosition(){
-    return {x: this.canvasElement.clientWidth/2, y:this.canvasElement.clientHeight/2};
+    return new Point({x: this.canvasElement.clientWidth/2, y:this.canvasElement.clientHeight/2});
   }
 
   // helper to set stroke and fill
