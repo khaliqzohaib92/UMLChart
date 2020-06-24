@@ -5,6 +5,24 @@
     border-right: 1px solid gainsboro;
 }
 
-#svg-test{
-    cursor: move;
+.sidebar-category-title{
+    padding: 5px 10px;
+    border-bottom: 1px solid gainsboro;
+    color: gray;
+}
+
+.sidebar-category-shapes-ul{
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    padding: 10px;
+}
+
+.sidebar-category-shapes-li{
+    list-style: none;
+}
+
+.sidebar-category-images{
+    height: 50px;
+    width: 50px;
 }
