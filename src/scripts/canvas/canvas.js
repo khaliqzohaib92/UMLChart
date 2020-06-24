@@ -23,7 +23,7 @@ class MyCanvas {
     //creating tool
     this.tool = new Tool();
     // has moved at least 10 points:
-    tool.minDistance = 10;
+    tool.minDistance = 5;
 
     //binds methods
     this.drawShapes = this.drawShapes.bind(this);
@@ -33,13 +33,14 @@ class MyCanvas {
     this.onToolDoubleClick = this.onToolDoubleClick.bind(this);
     this.onToolMouseDown = this.onToolMouseDown.bind(this);
     this.setOneItemSelected = this.setOneItemSelected.bind(this);
-    this.onItemDrag = this.onItemDrag.bind(this);
+    this.onToolDrag = this.onToolDrag.bind(this);
+    this.onToolKeyDown = this.onToolKeyDown.bind(this);
 
     //tool level clicklistener
     this.tool.onMouseDown = this.onToolMouseDown;
-    this.tool.onMouseDrag = this.onItemDrag;
-
-    //add double click listener on canvas because tool have no double click listener
+    this.tool.onMouseDrag = this.onToolDrag;
+    this.tool.onKeyDown = this.onToolKeyDown;
+     //add double click listener on canvas because tool have no double click listener
     this.canvasElement.addEventListener("dblclick", this.onToolDoubleClick);
 
   }
@@ -162,7 +163,7 @@ class MyCanvas {
   }
 
   //item drag listener
-  onItemDrag(e){
+  onToolDrag(e){
     if(this.currentActiveItem == null) return;
 
     if(this.currentActiveItem.data.state === 'move'){
@@ -210,6 +211,28 @@ class MyCanvas {
     }
     this.currentActiveItem = latestItem;
     latestItem.selected = true;
+  }
+
+
+  // keyboard methods
+  onToolKeyDown(e){
+    const position = this.currentActiveItem.position;
+    const step = 5;
+    switch(e.key){
+      case 'left':
+        position.x -= step;
+        break;
+      case 'right':
+        position.x += step;
+        break;
+      case 'up':
+        position.y -= step;
+        break;
+      case 'down':
+        position.y += step;
+        break; 
+    }
+    this.currentActiveItem.position = position;
   }
 
 
