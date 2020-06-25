@@ -7,10 +7,8 @@ import {getAngleDeg} from '../util/util';
 const boundsIdentifierObj = {
   1: 'topLeft', 2: 'topRight', 3: 'bottomRight', 0: 'bottomLeft'
 }
+const LINE = 'line'; 
 
-const ARROW_LINE = "arrowLine";
-const COMPOSITION_LINE = "compositionLine";
-const AGGREGATION_LINE = "aggregationLine";
 class MyCanvas {
   constructor(canvasElement) {
     this.canvasElement =  canvasElement;
@@ -33,11 +31,18 @@ class MyCanvas {
     tool.minDistance = 2;
 
     //binds methods
+    //shapes method binding
     this.drawShapes = this.drawShapes.bind(this);
     this.drawClassShape = this.drawClassShape.bind(this);
     this.drawLineShape = this.drawLineShape.bind(this);
-    this.getCenterPosition = this.getCenterPosition.bind(this);
+    this.drawObjectShape = this.drawObjectShape.bind(this);
     this.drawTextShape = this.drawTextShape.bind(this);
+    this.drawUserCaseShape = this.drawUseCaseShape.bind(this);
+
+    //general method binding
+    this.getCenterPosition = this.getCenterPosition.bind(this);
+
+    //user interaction method binding
     this.onToolDoubleClick = this.onToolDoubleClick.bind(this);
     this.onToolMouseDown = this.onToolMouseDown.bind(this);
     this.setOneItemSelected = this.setOneItemSelected.bind(this);
@@ -55,19 +60,34 @@ class MyCanvas {
 
   }
 
+  //shape draw distributor
   drawShapes(shapeName){
 
     switch (shapeName) {
       case SHAPES.CLASS:
         this.drawClassShape();
         break;
-      case SHAPES.LINE:  
-        const startPoint = new Point(this.centerPosition.x-50, this.centerPosition.y);
-        const endPoint = new Point(this.centerPosition.x+50, this.centerPosition.y);
-        
-        console.log('initial start: '+startPoint);
-        console.log('initial end: '+endPoint);
-        this.drawLineShape(startPoint, endPoint, ARROW_LINE);
+      case SHAPES.AGGREGATION:
+      case SHAPES.COMPOSITION:
+      case SHAPES.DIVIDER:  
+      case SHAPES.ASSOCIATION:  
+        let startPoint = new Point(this.centerPosition.x-50, this.centerPosition.y);
+        let endPoint = new Point(this.centerPosition.x+50, this.centerPosition.y);
+        this.drawLineShape(startPoint, endPoint, shapeName);
+        break;
+      case SHAPES.SQUARE:
+      case SHAPES.OBJECT:
+      case SHAPES.INTERFACE:
+          this.drawObjectShape(shapeName);
+        break;
+      case SHAPES.TITLE:
+        startPoint = new Point(this.centerPosition.x-25, this.centerPosition.y-25);
+        this.drawTextShape(startPoint, "Add Text");
+        break;
+      case SHAPES.CIRCLE:
+      case SHAPES.USECASE:
+        this.drawUseCaseShape(shapeName);
+        break;
       default:
         break;
     }
@@ -75,9 +95,6 @@ class MyCanvas {
   }
 
   // Creates three rectangle to make a class UML
-  // First for class name
-  // Second for variable name
-  // third for method name
   drawClassShape(){
     //creates group and add shapes
 
@@ -132,6 +149,7 @@ class MyCanvas {
     return textShape
   }
 
+  //add Divider/Association/Compositioin/Aggregation with head shape and three circles (to aid movement and drag)
   drawLineShape(startPoint, endPoint, lineType){
     
 
@@ -167,37 +185,96 @@ class MyCanvas {
     group.addChild(headCircle);
 
     //draw arrow shape
-    const arrowShape = new Path();
-    arrowShape.strokeColor= this.strokeColor;
-    arrowShape.strokeWidth = this.strokeSize;
+    const headShape = new Path();
+    headShape.strokeColor= this.strokeColor;
+    headShape.strokeWidth = this.strokeSize;
 
     let arrowCenter = endPoint;
 
     //based on line type draw shape
-    if(lineType === ARROW_LINE){
+    if(lineType !== SHAPES.DIVIDER){
       const leftEdge = new Point(arrowCenter.x-10, arrowCenter.y-10);
       const rightEdge = new Point(arrowCenter.x-10, arrowCenter.y+10);
-      arrowShape.add(leftEdge);
-      arrowShape.add(arrowCenter);
-      arrowShape.add(rightEdge);
+      headShape.add(leftEdge);
+      headShape.add(arrowCenter);
+      headShape.add(rightEdge);
+
+      if(lineType === SHAPES.AGGREGATION || lineType ===  SHAPES.COMPOSITION){
+        const bottomRightEdge = new Point(arrowCenter.x-20, arrowCenter.y);
+        const bottomLeftEdge = leftEdge;
+        headShape.add(bottomRightEdge);
+        headShape.add(bottomLeftEdge);
+
+        if(lineType === SHAPES.AGGREGATION){
+          headShape.strokeColor = 'white';
+          headShape.fillColor = 'white';
+          headShape.shadowColor = 'gray';
+          headShape.shadowOffset=1;
+        }
+
+        if(lineType === SHAPES.COMPOSITION){
+          headShape.fillColor = 'black';
+        }
+      }
     }
 
     
 
-    //rotate the head shpae
-    arrowShape.rotate(
-      getAngleDeg(endPoint.x, endPoint.y,startPoint.x, startPoint.y), 
-      arrowCenter);
+    //rotate the head shape
+    if(lineType !== SHAPES.DIVIDER)
+      headShape.rotate(
+        getAngleDeg(endPoint.x, endPoint.y,startPoint.x, startPoint.y), 
+        arrowCenter);
 
     
     //add group to main group
     mainGroup.addChild(group);
-    mainGroup.addChild(arrowShape);
-    mainGroup.data.type = lineType;
+    if(lineType !== SHAPES.DIVIDER)
+      mainGroup.addChild(headShape);
+    mainGroup.data.type = LINE;
+    mainGroup.data.lineType = lineType;
 
     return mainGroup;
   }
 
+  //add Object/Interface shape
+  drawObjectShape(type){
+    //creates object rectangle
+    const startPoint = new Point(this.centerPosition.x-50, this.centerPosition.y-25)
+    const objectShape = new Path.Rectangle(startPoint.x, startPoint.y, this.defaultSize[0], this.defaultSize[0]/2);
+    this.setStrokeAndFill(objectShape);
+
+
+
+    //create textshape
+    if(type !== SHAPES.SQUARE){
+      const textShapeStartPoint = new Point(startPoint.x+30, startPoint.y+30);
+      const textShape = this.drawTextShape(textShapeStartPoint, type);
+
+      //creates group and object shape and text shape
+      // const group = new Group();
+      // group.addChild(objectShape);
+      // if(type !== SHAPES.SQUARE)
+      //   group.addChild(textShape);
+    }
+
+   
+  }
+
+  //add Usecase/Activity shape
+  drawUseCaseShape(type){
+    //draw circle
+    let circlePath = new Path.Circle(this.centerPosition, 25);
+    circlePath.scale(2,1.2);
+    
+    //scale to make it an oval
+    this.setStrokeAndFill(circlePath)
+
+    if(type === SHAPES.USECASE){
+      //add Text
+      const textShape = this.drawTextShape(new Point(this.centerPosition.x-25, this.centerPosition.y+5), type);
+    }
+  }
   
   //on tool click
   onToolMouseDown(e){
@@ -214,7 +291,8 @@ class MyCanvas {
       this.currentActiveItem.data.state = 'move'
     }
     //set items data based on item mouseDown point
-    if(this.currentActiveItem.data.type !== ARROW_LINE){
+    if(this.currentActiveItem.data.type !== LINE){
+      debugger
       if(this.currentActiveItem.hitTest(e.point, {bounds: true, tolerance: 5})){
         //get bounds of the shape
         const bounds = this.currentActiveItem.bounds;
@@ -256,11 +334,12 @@ class MyCanvas {
       this.currentActiveItem.position = e.point;  
     } else
     if(this.currentActiveItem.data.state === 'resize'){
-      if(this.currentActiveItem.data.type === ARROW_LINE){
+      if(this.currentActiveItem.data.type === LINE){
         //shapes with type line, re-rendering line on each user move
         const lineStartPoint = this.currentActiveItem.firstChild.firstChild.segments[0].point;
+        const lineType = this.currentActiveItem.data.lineType;
         this.currentActiveItem.remove();
-        this.currentActiveItem =  this.drawLineShape(lineStartPoint, e.point, ARROW_LINE);
+        this.currentActiveItem =  this.drawLineShape(lineStartPoint, e.point, lineType);
         this.currentActiveItem.data.state = 'resize'
       }else{
         //shapes other than line, updating the bounds
@@ -309,7 +388,7 @@ class MyCanvas {
   }
 
 
-  // keyboard methods
+  // keyboard intraction to move shapes
   onToolKeyDown(e){
     if(!this.currentActiveItem) return;
 

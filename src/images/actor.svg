@@ -1,0 +1,18 @@
+<svg width="30" height="40" xmlns="http://www.w3.org/2000/svg">
+ <!-- Created with Method Draw - http://github.com/duopixel/Method-Draw/ -->
+
+ <g>
+  <title>background</title>
+  <rect fill="none" id="canvas_background" height="42" width="32" y="-1" x="-1"/>
+ </g>
+ <g>
+  <title>Layer 1</title>
+  <g stroke="null" id="svg_1">
+   <ellipse stroke="#000" fill="#fff" stroke-width="2" stroke-opacity="null" fill-opacity="null" cx="14.222223" cy="8.888894" id="svg_11" rx="3.333333" ry="3.333333"/>
+   <line stroke="#000" fill="none" stroke-width="2" stroke-opacity="null" fill-opacity="null" x1="14.222223" y1="12.777782" x2="14.222223" y2="27.777783" id="svg_12" stroke-linejoin="null" stroke-linecap="null"/>
+   <line stroke="#000" fill="none" stroke-width="2" stroke-opacity="null" fill-opacity="null" x1="7" y1="15.000006" x2="22.000001" y2="15.000006" id="svg_13" stroke-linejoin="null" stroke-linecap="null"/>
+   <line stroke="#000" fill="none" stroke-width="2" stroke-opacity="null" fill-opacity="null" x1="14.222223" y1="26.666673" x2="7" y2="35.000007" id="svg_14" stroke-linejoin="null" stroke-linecap="null"/>
+   <line stroke="#000" fill="none" stroke-width="2" stroke-opacity="null" fill-opacity="null" x1="14.222223" y1="27.222229" x2="20.333334" y2="34.444451" id="svg_15" stroke-linejoin="null" stroke-linecap="null"/>
+  </g>
+ </g>
+</svg>

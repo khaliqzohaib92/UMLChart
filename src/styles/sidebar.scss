@@ -1,6 +1,6 @@
 #section-content-sidebar{
     display: flex;
-    width: 15%;
+    width: 18%;
     flex-direction: column;
     border-right: 1px solid gainsboro;
 }
@@ -15,14 +15,14 @@
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;
-    padding: 10px;
 }
 
 .sidebar-category-shapes-li{
     list-style: none;
+    margin: 5px;
 }
 
 .sidebar-category-images{
-    height: 50px;
-    width: 50px;
+    height: 45px;
+    width: 80px;
 }
