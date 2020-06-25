@@ -40,7 +40,6 @@ class MyCanvas {
     this.drawTextShape = this.drawTextShape.bind(this);
     this.onToolDoubleClick = this.onToolDoubleClick.bind(this);
     this.onToolMouseDown = this.onToolMouseDown.bind(this);
-    this.onToolMouseUp = this.onToolMouseUp.bind(this);
     this.setOneItemSelected = this.setOneItemSelected.bind(this);
     this.onToolDrag = this.onToolDrag.bind(this);
     this.onToolKeyDown = this.onToolKeyDown.bind(this);
@@ -143,17 +142,28 @@ class MyCanvas {
     const line = new Path.Line(startPoint, endPoint);
     this.setStrokeAndFill(line);
 
+    // draw head circle
     const headCircle = new Path.Circle(endPoint, 5);
     headCircle.fillColor = 'black';
     headCircle.strokeWidth = 1;
 
+    //draw middle circle
+    const midPoint = new Point((startPoint.x+endPoint.x)/2, (startPoint.y+endPoint.y)/2)
+    const midCircle = new Path.Circle(midPoint, 4);
+    midCircle.fillColor = 'black';
+    midCircle.strokeWidth = 1;
+
+
+    //draw tail circle
     const tailCircle = new Path.Circle(startPoint, 5);
     tailCircle.fillColor = 'black';
     tailCircle.strokeWidth = 1;
 
 
+    //add circles and line to group
     group.addChild(line);
     group.addChild(tailCircle);
+    group.addChild(midCircle);
     group.addChild(headCircle);
 
     //draw arrow shape
@@ -163,6 +173,7 @@ class MyCanvas {
 
     let arrowCenter = endPoint;
 
+    //based on line type draw shape
     if(lineType === ARROW_LINE){
       const leftEdge = new Point(arrowCenter.x-10, arrowCenter.y-10);
       const rightEdge = new Point(arrowCenter.x-10, arrowCenter.y+10);
@@ -173,11 +184,13 @@ class MyCanvas {
 
     
 
+    //rotate the head shpae
     arrowShape.rotate(
       getAngleDeg(endPoint.x, endPoint.y,startPoint.x, startPoint.y), 
       arrowCenter);
 
     
+    //add group to main group
     mainGroup.addChild(group);
     mainGroup.addChild(arrowShape);
     mainGroup.data.type = lineType;
@@ -226,7 +239,7 @@ class MyCanvas {
       }
     } else {
       //only for shapes with type LINE
-      const headCircleItem = this.currentActiveItem.firstChild.children[2];
+      const headCircleItem = this.currentActiveItem.firstChild.children[3];
       if(headCircleItem.contains(e.point)){
         this.currentActiveItem.data.state = 'resize'
       }
@@ -244,11 +257,13 @@ class MyCanvas {
     } else
     if(this.currentActiveItem.data.state === 'resize'){
       if(this.currentActiveItem.data.type === ARROW_LINE){
+        //shapes with type line, re-rendering line on each user move
         const lineStartPoint = this.currentActiveItem.firstChild.firstChild.segments[0].point;
         this.currentActiveItem.remove();
         this.currentActiveItem =  this.drawLineShape(lineStartPoint, e.point, ARROW_LINE);
         this.currentActiveItem.data.state = 'resize'
       }else{
+        //shapes other than line, updating the bounds
         this.currentActiveItem.bounds = new Rectangle(
           this.currentActiveItem.data.from,e.point);
       }
