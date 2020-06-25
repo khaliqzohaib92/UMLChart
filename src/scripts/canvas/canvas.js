@@ -2,9 +2,15 @@ import { SHAPES } from "../util/constants";
 import paper, { Project, Path, Group, PointText, tool, Tool, Rectangle, Point } from 'paper';
 import Modal from "../modal/modal";
 
+import {getAngleDeg} from '../util/util';
+
 const boundsIdentifierObj = {
   1: 'topLeft', 2: 'topRight', 3: 'bottomRight', 0: 'bottomLeft'
 }
+
+const ARROW_LINE = "arrowLine";
+const COMPOSITION_LINE = "compositionLine";
+const AGGREGATION_LINE = "aggregationLine";
 class MyCanvas {
   constructor(canvasElement) {
     this.canvasElement =  canvasElement;
@@ -13,7 +19,7 @@ class MyCanvas {
     this.fillColor = "white";
     this.defaultSize = [100,100];
     this.currentActiveItem = null;
-    this.lineDefaultWidth = 3;
+    this.strokeSize = 3;
 
     // sets up paper js on canvas
     paper.setup(canvasElement);
@@ -24,7 +30,7 @@ class MyCanvas {
     //creating tool
     this.tool = new Tool();
     // has moved at least 10 points:
-    tool.minDistance = 5;
+    tool.minDistance = 2;
 
     //binds methods
     this.drawShapes = this.drawShapes.bind(this);
@@ -62,7 +68,7 @@ class MyCanvas {
         
         console.log('initial start: '+startPoint);
         console.log('initial end: '+endPoint);
-        this.drawLineShape(startPoint, endPoint);
+        this.drawLineShape(startPoint, endPoint, ARROW_LINE);
       default:
         break;
     }
@@ -127,46 +133,56 @@ class MyCanvas {
     return textShape
   }
 
-  drawLineShape(startPoint, endPoint){
+  drawLineShape(startPoint, endPoint, lineType){
+    
+
+    let mainGroup = new Group();
+    let group =  new Group();
+    
+    //draw line
+    const line = new Path.Line(startPoint, endPoint);
+    this.setStrokeAndFill(line);
+
+    const headCircle = new Path.Circle(endPoint, 5);
+    headCircle.fillColor = 'black';
+    headCircle.strokeWidth = 1;
+
+    const tailCircle = new Path.Circle(startPoint, 5);
+    tailCircle.fillColor = 'black';
+    tailCircle.strokeWidth = 1;
+
+
+    group.addChild(line);
+    group.addChild(tailCircle);
+    group.addChild(headCircle);
+
     //draw arrow shape
     const arrowShape = new Path();
-    arrowShape.strokeColor = 'black';
-    arrowShape.strokeWidth = 3;
-    let leftEdge, rightEdge;
-    arrowShape.add(startPoint);
-    if(startPoint.y !== endPoint.y){
-      arrowShape.add(new Point(endPoint.x, startPoint.y));
-    }
-    arrowShape.add(endPoint);
-    
-    if(startPoint.y > endPoint.y){
-      leftEdge = new Point(endPoint.x-10, endPoint.y+10);
-      rightEdge = new Point(endPoint.x+10, endPoint.y+10);
-      arrowShape.add(leftEdge)
-      arrowShape.add(new Point(endPoint));
-      arrowShape.add(rightEdge)
-    }else
-    if(startPoint.y < endPoint.y){
-      leftEdge = new Point(endPoint.x-10, endPoint.y-10);
-      rightEdge = new Point(endPoint.x+10, endPoint.y-10);
-      arrowShape.add(leftEdge)
-      arrowShape.add(new Point(endPoint));
-      arrowShape.add(rightEdge)
-    } else{
-      leftEdge = new Point(endPoint.x-10, endPoint.y-10);
-      rightEdge = new Point(endPoint.x-10, endPoint.y+10);
+    arrowShape.strokeColor= this.strokeColor;
+    arrowShape.strokeWidth = this.strokeSize;
+
+    let arrowCenter = endPoint;
+
+    if(lineType === ARROW_LINE){
+      const leftEdge = new Point(arrowCenter.x-10, arrowCenter.y-10);
+      const rightEdge = new Point(arrowCenter.x-10, arrowCenter.y+10);
       arrowShape.add(leftEdge);
-      arrowShape.add(endPoint);
+      arrowShape.add(arrowCenter);
       arrowShape.add(rightEdge);
     }
 
-    arrowShape.data.type = 'line';
-    arrowShape.data.start = startPoint;
-    arrowShape.data.end = endPoint;
-    arrowShape.data.leftEdge = leftEdge;
-    arrowShape.data.rightEdge = rightEdge;
+    
 
-    return arrowShape;
+    arrowShape.rotate(
+      getAngleDeg(endPoint.x, endPoint.y,startPoint.x, startPoint.y), 
+      arrowCenter);
+
+    
+    mainGroup.addChild(group);
+    mainGroup.addChild(arrowShape);
+    mainGroup.data.type = lineType;
+
+    return mainGroup;
   }
 
   
@@ -184,88 +200,60 @@ class MyCanvas {
     if(this.currentActiveItem.contains(e.point)){
       this.currentActiveItem.data.state = 'move'
     }
-    // debugger
     //set items data based on item mouseDown point
-    if(this.currentActiveItem.hitTest(e.point, {bounds: true, tolerance: 5})){
-      //get bounds of the shape
-      const bounds = this.currentActiveItem.bounds;
+    if(this.currentActiveItem.data.type !== ARROW_LINE){
+      if(this.currentActiveItem.hitTest(e.point, {bounds: true, tolerance: 5})){
+        //get bounds of the shape
+        const bounds = this.currentActiveItem.bounds;
 
-      //itrating to find the exact bound point
-      for(let[key, value] of Object.entries(boundsIdentifierObj)){
-        if(bounds[value].isClose(e.point, 5)){
-          const oppositeBound = bounds[boundsIdentifierObj[(parseInt(key) + 2) % 4]];
-          //get opposite bound point
-          const oppositePoint = new Point(oppositeBound.x,oppositeBound.y);
-          //get current bound point
-          const currentPoint = new Point(bounds[value].x, bounds[value].y);
 
-          //set shape data to be used for resizing later
-          this.currentActiveItem.data.state = 'resize'
-          this.currentActiveItem.data.from = oppositePoint;
-          this.currentActiveItem.data.to = currentPoint;
-          break;
+        //itrating to find the exact bound point
+        for(let[key, value] of Object.entries(boundsIdentifierObj)){
+          if(bounds[value].isClose(e.point, 5)){
+            const oppositeBound = bounds[boundsIdentifierObj[(parseInt(key) + 2) % 4]];
+            //get opposite bound point
+            const oppositePoint = new Point(oppositeBound.x,oppositeBound.y);
+            //get current bound point
+            const currentPoint = new Point(bounds[value].x, bounds[value].y);
+
+            //set shape data to be used for resizing later
+            this.currentActiveItem.data.state = 'resize'
+            this.currentActiveItem.data.from = oppositePoint;
+            this.currentActiveItem.data.to = currentPoint;
+            break;
+          }
         }
+      }
+    } else {
+      //only for shapes with type LINE
+      const headCircleItem = this.currentActiveItem.firstChild.children[2];
+      if(headCircleItem.contains(e.point)){
+        this.currentActiveItem.data.state = 'resize'
       }
     }
   }
 
-  //on mouse up
-  onToolMouseUp(e){
-    // if(!this.currentActiveItem) return null;
-    // if(this.currentActiveItem.data.type === 'line'){
-    //   const leftEdge = this.currentActiveItem.data.leftEdge;
-    //   const rightEdge = this.currentActiveItem.data.rightEdge;
-    // this.project.activeLayer.children.forEach(child=>{
-    //   if((child.contains(leftEdge) && child.data.type !== 'line')){
-    //     const res = child.hitTest(leftEdge, {bounds: true, tolerance: 20})
-    //     debugger
-    //   }
-    // });
-    // }
-  }
 
   //item drag listener
   onToolDrag(e){
     // debugger
     if(this.currentActiveItem == null) return;
 
-    if(this.currentActiveItem.data.state === 'move'  && this.currentActiveItem.data.type !== 'line'){
+    if(this.currentActiveItem.data.state === 'move'){
       this.currentActiveItem.position = e.point;  
     } else
-    if(this.currentActiveItem.data.state === 'resize' && this.currentActiveItem.data.type !== 'line'){
+    if(this.currentActiveItem.data.state === 'resize'){
+      if(this.currentActiveItem.data.type === ARROW_LINE){
+        const lineStartPoint = this.currentActiveItem.firstChild.firstChild.segments[0].point;
+        this.currentActiveItem.remove();
+        this.currentActiveItem =  this.drawLineShape(lineStartPoint, e.point, ARROW_LINE);
+        this.currentActiveItem.data.state = 'resize'
+      }else{
+        this.currentActiveItem.bounds = new Rectangle(
+          this.currentActiveItem.data.from,e.point);
+      }
       this.currentActiveItem.selected = true
-      this.currentActiveItem.bounds = new Rectangle(
-        new Point(this.currentActiveItem.data.from.x, 
-        this.currentActiveItem.data.from.y), 
-        new Point(e.point.x, 
-        e.point.y));
-    } else
-    if(this.currentActiveItem.data.type === 'line' && this.currentActiveItem.selected){
-      const startPoint = this.currentActiveItem.data.start;
-      const endPoint = this.currentActiveItem.data.end;
-      const closeToTail = e.point.isClose(startPoint, 20);
-      const closeToleftEdge = e.point.isClose(endPoint, 20);
-
-      if(closeToTail){
-        this.currentActiveItem.remove();
-        this.currentActiveItem = this.drawLineShape(e.point, endPoint);
-      }else       
-      if(closeToleftEdge){
-        this.currentActiveItem.remove();
-        this.currentActiveItem = this.drawLineShape(startPoint, e.point);
-      }
-
-      //move the line logic
-      if(!closeToleftEdge && !closeToTail){
-        const segmentCount =  this.currentActiveItem.segments.length;
-        this.currentActiveItem.position = e.point;
-        this.currentActiveItem.data.start = this.currentActiveItem.segments[0].point;
-        this.currentActiveItem.data.end = this.currentActiveItem.segments[segmentCount-2].point;
-        this.currentActiveItem.data.leftEdge = this.currentActiveItem.segments[segments-3].point;
-        this.currentActiveItem.data.rightEdge = this.currentActiveItem.segments[segments-1].point;
-      }
-      this.currentActiveItem.selected = true;
-    }
+    } 
   }
 
   //on tool double click
@@ -338,6 +326,7 @@ class MyCanvas {
 
   // helper to set stroke and fill
   setStrokeAndFill(item){
+    item.strokeWidth = this.strokeSize;
     item.strokeColor = this.strokeColor;
     item.fillColor = this.fillColor;
   }
