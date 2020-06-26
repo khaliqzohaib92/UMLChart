@@ -21,14 +21,24 @@
     <section class="section-content-main">
       <Section id="section-content-sidebar">   
       </Section>
-      <canvas id="myCanvas"></canvas>
-      <section>
-        <div>
-          <button id="open-file">Open</button>
-          <button id="download-file">Download</button>
+      <section class="canvas-container-main">
+        <div class="canvas-menu-container">
+          <img class="canvas-menu-img" id="open-file" src="./src/images/open-file.svg"/>
+          <img class="canvas-menu-img" id="download-file" src="./src/images/download-file.svg"/>
+          <img class="canvas-menu-img" id="zoom-in" src="./src/images/zoom-in.svg"/>
+          <img class="canvas-menu-img" id="zoom-out" src="./src/images/zoom-out.svg"/>
         </div>
+        <div id="canvas-container">
+          <canvas id="myCanvas"></canvas>
+        </div>
+      </section>
+      <section>
+        <div> </div>
       </section>
     </section>
     <script src="./dist/main.js"></script>
   </body>
 </html>
+
+
+<!-- Icons made by <a href="https://www.flaticon.com/free-icon/download_481657" title="Those Icons">Those Icons</a> from <a href="https://www.flaticon.com/" title="Flaticon"> www.flaticon.com</a> -->
