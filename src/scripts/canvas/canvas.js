@@ -75,7 +75,7 @@ class MyCanvas {
     const openFileElement = document.getElementById('open-file');
     const downloadFileElement = document.getElementById('download-file');
 
-    openFileElement.addEventListener('click',this.openFile);
+    openFileElement.addEventListener('click',this.openFile.bind(this));
 
     downloadFileElement.addEventListener('click', this.downloadAsSVG.bind(this));
   }
@@ -90,7 +90,6 @@ class MyCanvas {
             this.project.importSVG(URL.createObjectURL(input.files[0]),(group, svg)=>{
               this.project.clear();
               const that = this;
-              debugger
               while(group.children[1].children.length > 0){
                 that.project.activeLayer.addChild(group.children[1].children[0]);
               }
