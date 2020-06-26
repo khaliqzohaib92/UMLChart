@@ -1,5 +1,5 @@
 import { SHAPES } from "../util/constants";
-import paper, { Project, Path, Group, PointText, tool, Tool, Rectangle, Point } from 'paper';
+import paper, { Project, Path, Group, PointText, tool, Tool, Rectangle, Point, Size } from 'paper';
 import Modal from "../modal/modal";
 
 import {getAngleDeg} from '../util/util';
@@ -17,7 +17,7 @@ class MyCanvas {
     this.fillColor = "white";
     this.defaultSize = [100,100];
     this.currentActiveItem = null;
-    this.strokeSize = 3;
+    this.strokeWidth = 2;
 
     // sets up paper js on canvas
     paper.setup(canvasElement);
@@ -38,6 +38,11 @@ class MyCanvas {
     this.drawObjectShape = this.drawObjectShape.bind(this);
     this.drawTextShape = this.drawTextShape.bind(this);
     this.drawUserCaseShape = this.drawUseCaseShape.bind(this);
+    this.drawComponentShape = this.drawComponentShape.bind(this);
+    this.drawModuleShape = this.drawModuleShape.bind(this);
+    this.drawActivityShape = this.drawActivityShape.bind(this);
+    this.drawDecisionShape = this.drawDecisionShape.bind(this);
+    this.drawActorShape = this.drawActorShape.bind(this);
 
     //general method binding
     this.getCenterPosition = this.getCenterPosition.bind(this);
@@ -57,7 +62,6 @@ class MyCanvas {
 
      //add double click listener on canvas because tool have no double click listener
     this.canvasElement.addEventListener("dblclick", this.onToolDoubleClick);
-
   }
 
   //shape draw distributor
@@ -88,10 +92,23 @@ class MyCanvas {
       case SHAPES.USECASE:
         this.drawUseCaseShape(shapeName);
         break;
+      case SHAPES.COMPONENT:
+        this.drawComponentShape();
+        break;
+      case SHAPES.MODULE:
+        this.drawModuleShape();
+        break;
+      case SHAPES.ACTIVITY:
+        this.drawActivityShape();
+        break;
+      case SHAPES.DECISION:
+        this.drawDecisionShape();
+        break;
+      case SHAPES.ACTOR:
+        this.drawActorShape();
       default:
         break;
     }
-
   }
 
   // Creates three rectangle to make a class UML
@@ -187,7 +204,7 @@ class MyCanvas {
     //draw arrow shape
     const headShape = new Path();
     headShape.strokeColor= this.strokeColor;
-    headShape.strokeWidth = this.strokeSize;
+    headShape.strokeWidth = this.strokeWidth;
 
     let arrowCenter = endPoint;
 
@@ -241,8 +258,8 @@ class MyCanvas {
   drawObjectShape(type){
     //creates object rectangle
     const startPoint = new Point(this.centerPosition.x-50, this.centerPosition.y-25)
-    const objectShape = new Path.Rectangle(startPoint.x, startPoint.y, this.defaultSize[0], this.defaultSize[0]/2);
-    this.setStrokeAndFill(objectShape);
+    const rectangle = new Path.Rectangle(startPoint.x, startPoint.y, this.defaultSize[0], this.defaultSize[0]/2);
+    this.setStrokeAndFill(rectangle);
 
 
 
@@ -250,12 +267,6 @@ class MyCanvas {
     if(type !== SHAPES.SQUARE){
       const textShapeStartPoint = new Point(startPoint.x+30, startPoint.y+30);
       const textShape = this.drawTextShape(textShapeStartPoint, type);
-
-      //creates group and object shape and text shape
-      // const group = new Group();
-      // group.addChild(objectShape);
-      // if(type !== SHAPES.SQUARE)
-      //   group.addChild(textShape);
     }
 
    
@@ -275,7 +286,89 @@ class MyCanvas {
       const textShape = this.drawTextShape(new Point(this.centerPosition.x-25, this.centerPosition.y+5), type);
     }
   }
+
+  //add Component shape
+  drawComponentShape(){
+    //draw main rectangle
+    const startPoint = new Point(this.centerPosition.x-50, this.centerPosition.y-25)
+    const rectangle = new Path.Rectangle(startPoint.x, startPoint.y, this.defaultSize[0]+20, this.defaultSize[0]-45);
+    this.setStrokeAndFill(rectangle);
+
+    // draw sub part of the shape
+    const subRect = new Path.Rectangle(rectangle.bounds.topRight.x-25, startPoint.y+6, 20, 25);
+    this.setStrokeAndFill(subRect);
+    subRect.strokeWidth = 2/this.strokeWidth;
+
+    //draw two sub rec
+    const subRect1 = new Path.Rectangle(rectangle.bounds.topRight.x-28, startPoint.y+9, 7, 7);
+    this.setStrokeAndFill(subRect1);
+    subRect1.strokeWidth = 2/this.strokeWidth;
+
+    const subRect2 = new Path.Rectangle(rectangle.bounds.topRight.x-28, startPoint.y+20, 7, 7);
+    this.setStrokeAndFill(subRect2);
+    subRect2.strokeWidth = 2/this.strokeWidth;
+
+    //create group and add shapes
+    let group =  new Group();
+
+    group.addChild(rectangle);
+    group.addChild(subRect);
+    group.addChild(subRect1);
+    group.addChild(subRect2);
+
+    //add text to shape
+    const textShape = this.drawTextShape(new Point(this.centerPosition.x-25, this.centerPosition.y+8), SHAPES.COMPONENT);
+  }
+
+  //add module shape
+  drawModuleShape(){
+    
+    // draw main rect
+    const rectangle = new Path.Rectangle(this.centerPosition.x-50, this.centerPosition.y-50, this.defaultSize[0]+20, this.defaultSize[0]-40);
+    this.setStrokeAndFill(rectangle);
+
+    //draw two sub rec
+    const subRect1 = new Path.Rectangle(rectangle.bounds.topLeft.x-7, rectangle.bounds.topLeft.y+12, 15, 12);
+    this.setStrokeAndFill(subRect1);
+
+    const subRect2 = new Path.Rectangle(rectangle.bounds.topLeft.x-7, rectangle.bounds.topLeft.y+35, 15, 12);
+    this.setStrokeAndFill(subRect2);
+
+    //create group and add shapes
+    let group =  new Group();
+
+    group.addChild(rectangle);
+    group.addChild(subRect1);
+    group.addChild(subRect2);
+
+    //add text to shape
+    const textShape = this.drawTextShape(new Point(this.centerPosition.x-10, this.centerPosition.y-15), SHAPES.MODULE);
+  }
   
+
+  //add activity shape
+  drawActivityShape(){
+    //create rounded shape rectangle
+    const rectangle = new Rectangle(this.centerPosition.subtract(50), new Point(this.centerPosition.x+70, this.centerPosition.y));
+    const radius = new Size(30, 30);
+    const path = new Path.Rectangle(rectangle, radius);
+    this.setStrokeAndFill(path);
+
+    
+    //add text to shape
+    const textShape = this.drawTextShape(new Point(this.centerPosition.x-10, this.centerPosition.y-20), SHAPES.ACTIVITY);
+  }
+
+  //add decision shape
+  drawDecisionShape(){
+    //create rectangle
+    const rectangle = new Path.Rectangle(this.centerPosition.x-20, this.centerPosition.y-20, this.defaultSize[0]/2.5, this.defaultSize[0]/2.5);
+    this.setStrokeAndFill(rectangle);
+
+    //rotate
+    rectangle.rotate(45);
+  }
+
   //on tool click
   onToolMouseDown(e){
     //toggle item selected
@@ -292,7 +385,6 @@ class MyCanvas {
     }
     //set items data based on item mouseDown point
     if(this.currentActiveItem.data.type !== LINE){
-      debugger
       if(this.currentActiveItem.hitTest(e.point, {bounds: true, tolerance: 5})){
         //get bounds of the shape
         const bounds = this.currentActiveItem.bounds;
@@ -322,6 +414,36 @@ class MyCanvas {
         this.currentActiveItem.data.state = 'resize'
       }
     }
+  }
+
+  //draw actor shape
+  drawActorShape(){
+    //draw actor head
+    const head = new Path.Circle(new Point(this.centerPosition.x, this.centerPosition.y-50), 7);
+    this.setStrokeAndFill(head)
+
+    //draw actor body
+    const body = new Path.Line(new Point(this.centerPosition.x, this.centerPosition.y-43), new Point(this.centerPosition.x, this.centerPosition.y-10));
+    this.setStrokeAndFill(body)
+
+    //draw actor arms
+    const arms = new Path.Line(new Point(this.centerPosition.x-20, this.centerPosition.y-38), new Point(this.centerPosition.x+20, this.centerPosition.y-38));
+    this.setStrokeAndFill(arms) 
+
+    //draw feet
+    const leftFeet = new Path.Line(new Point(this.centerPosition.x-20, this.centerPosition.y+5), new Point(this.centerPosition.x, this.centerPosition.y-10));
+    this.setStrokeAndFill(leftFeet) 
+
+    const rightFeet = new Path.Line(new Point(this.centerPosition.x, this.centerPosition.y-10), new Point(this.centerPosition.x+20, this.centerPosition.y+5));
+    this.setStrokeAndFill(rightFeet) 
+
+    //add shapes to group to make full actor
+    let group =  new Group();
+    group.addChild(head);
+    group.addChild(body);
+    group.addChild(arms);
+    group.addChild(leftFeet);
+    group.addChild(rightFeet);
   }
 
 
@@ -420,7 +542,7 @@ class MyCanvas {
 
   // helper to set stroke and fill
   setStrokeAndFill(item){
-    item.strokeWidth = this.strokeSize;
+    item.strokeWidth = this.strokeWidth;
     item.strokeColor = this.strokeColor;
     item.fillColor = this.fillColor;
   }
