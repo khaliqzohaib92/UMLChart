@@ -30,6 +30,11 @@
     cursor: pointer;
 }
 
+.header-nav-links a{
+    text-decoration: none;
+    color: black;
+}
+
 .header-nav-links > li:hover{
     transform:  scale(1.1);
 }

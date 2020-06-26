@@ -62,7 +62,58 @@ class MyCanvas {
 
      //add double click listener on canvas because tool have no double click listener
     this.canvasElement.addEventListener("dblclick", this.onToolDoubleClick);
+
+    //set right menu liteners
+    this.setRightMenuListeners = this.setRightMenuListeners.bind(this);
+
+    this.setRightMenuListeners();
   }
+
+
+  //set right menu click listener
+  setRightMenuListeners(){
+    const openFileElement = document.getElementById('open-file');
+    const downloadFileElement = document.getElementById('download-file');
+
+    openFileElement.addEventListener('click',this.openFile);
+
+    downloadFileElement.addEventListener('click', this.downloadAsSVG.bind(this));
+  }
+
+  //set input to open file picker dialog
+  openFile(){
+    let input = document.createElement('input');
+    input.type = 'file';
+    input.multiple = false;
+    input.accept = 'image/svg+xml';
+    input.onchange = () => {
+            this.project.importSVG(URL.createObjectURL(input.files[0]),(group, svg)=>{
+              this.project.clear();
+              const that = this;
+              debugger
+              while(group.children[1].children.length > 0){
+                that.project.activeLayer.addChild(group.children[1].children[0]);
+              }
+            })
+    };
+    input.click();
+    
+  }
+
+  // set download project as svg
+  downloadAsSVG() {
+   
+    if(this.project.activeLayer.children.length == 0) return;
+
+    const fileName = `umlchart_${Date.now()}.svg`;
+ 
+    var url = "data:image/svg+xml;utf8," + encodeURIComponent(this.project.exportSVG({asString:true}));
+    
+    var downloadLinkElement = document.createElement("a");
+    downloadLinkElement.download = fileName;
+    downloadLinkElement.href = url;
+    downloadLinkElement.click();
+ }
 
   //shape draw distributor
   drawShapes(shapeName){
@@ -268,8 +319,6 @@ class MyCanvas {
       const textShapeStartPoint = new Point(startPoint.x+30, startPoint.y+30);
       const textShape = this.drawTextShape(textShapeStartPoint, type);
     }
-
-   
   }
 
   //add Usecase/Activity shape
