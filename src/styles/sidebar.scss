@@ -1,6 +1,6 @@
 #section-content-sidebar{
     display: flex;
-    width: 18%;
+    width: 14.5%;
     flex-direction: column;
     border-right: 1px solid gainsboro;
     box-shadow: 0 1px 2px;
@@ -14,8 +14,8 @@
 
 .sidebar-category-shapes-ul{
     display: flex;
-    justify-content: space-between;
     flex-wrap: wrap;
+    padding: 5px 5px 0px 5px;
 }
 
 .sidebar-category-shapes-li{
@@ -24,6 +24,6 @@
 }
 
 .sidebar-category-images{
-    height: 45px;
-    width: 80px;
+    height: 38px;
+    width: 60px;
 }

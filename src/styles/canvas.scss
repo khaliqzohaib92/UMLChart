@@ -1,19 +1,27 @@
 .canvas-container-main{
-    width: 50%;
-    margin: 30px 100px;
+    width: 60%;
     display: flex;
     flex-direction: column;
     align-items: center;
+    margin-left: 100px;
+    margin-top: 20px;
 }
 
 .canvas-menu-container{
-    width: fit-content;
-    height: 6%;
+    width: 20%;
+    height: 5%;
     border: 1px solid gainsboro;
     border-radius: 3px;
     display: flex;
     align-items: center;
     padding: 5px;
+    justify-content: space-between;
+}
+
+.canvas-menu-container span{
+    width: 1px;
+    height: 100%;
+    background-color: gainsboro;
 }
 
 .canvas-menu-img{
@@ -22,7 +30,6 @@
     cursor: pointer;
     transition-duration: 0.2s;
     transition: ease;
-    margin-right: 10px;
 }
 
 .canvas-menu-img:hover{

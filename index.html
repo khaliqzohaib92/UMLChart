@@ -10,6 +10,7 @@
 
   <body id="body">
     <Header class="header-main">
+      <!-- nav bar -->
       <nav class="header-nav-main">
         <span class="header-nav-title">UMLChart</span>
         <ul class="header-nav-links">
@@ -18,24 +19,34 @@
         </ul>
       </nav>
     </Header>
+    <!-- content section -->
     <section class="section-content-main">
-      <Section id="section-content-sidebar">   
-      </Section>
+      <!-- side bar view -->
+      <Section id="section-content-sidebar"></Section>
+
+      <!-- canvas and menu -->
       <section class="canvas-container-main">
+        <!-- canvas top menu -->
         <div class="canvas-menu-container">
           <img class="canvas-menu-img" id="open-file" src="./src/images/open-file.svg"/>
           <img class="canvas-menu-img" id="download-file" src="./src/images/download-file.svg"/>
-          <img class="canvas-menu-img" id="zoom-in" src="./src/images/zoom-in.svg"/>
-          <img class="canvas-menu-img" id="zoom-out" src="./src/images/zoom-out.svg"/>
+          <span></span>
+          <img class="canvas-menu-img" id="bring-to-front" src="./src/images/bring-to-front.svg"/>
+          <img class="canvas-menu-img" id="move-to-back" src="./src/images/move-to-back.svg"/>
         </div>
+        <!-- canvas -->
         <div id="canvas-container">
           <canvas id="myCanvas"></canvas>
         </div>
       </section>
+
+      <!-- info side bar -->
       <section>
-        <div> </div>
+        <div id="info-sidebar"> </div>
       </section>
     </section>
+
+    
     <script src="./dist/main.js"></script>
   </body>
 </html>

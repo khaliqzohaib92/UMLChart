@@ -25,6 +25,9 @@ class MyCanvas {
     //creates new project in paper
     this.project = new Project(canvasElement)
 
+    //canvas scale value
+    this.canvasScaleValue = 1;
+
     //creating tool
     this.tool = new Tool();
     // has moved at least 10 points:
@@ -64,20 +67,23 @@ class MyCanvas {
     this.canvasElement.addEventListener("dblclick", this.onToolDoubleClick);
 
     //set right menu liteners
-    this.setRightMenuListeners = this.setRightMenuListeners.bind(this);
+    this.setMenuClickListener = this.setMenuClickListener.bind(this);
 
-    this.setRightMenuListeners();
+    this.setMenuClickListener();
   }
 
 
   //set right menu click listener
-  setRightMenuListeners(){
+  setMenuClickListener(){
     const openFileElement = document.getElementById('open-file');
     const downloadFileElement = document.getElementById('download-file');
+    const bringToFrontElement = document.getElementById('bring-to-front');
+    const moveToBackElement = document.getElementById('move-to-back');
 
     openFileElement.addEventListener('click',this.openFile.bind(this));
-
     downloadFileElement.addEventListener('click', this.downloadAsSVG.bind(this));
+    bringToFrontElement.addEventListener('click', this.bringToFront.bind(this));
+    moveToBackElement.addEventListener('click', this.moveToBack.bind(this));
   }
 
   //set input to open file picker dialog
@@ -112,6 +118,17 @@ class MyCanvas {
     downloadLinkElement.download = fileName;
     downloadLinkElement.href = url;
     downloadLinkElement.click();
+ }
+
+
+ //set bring to front listener for items
+ bringToFront(){
+  this.currentActiveItem.bringToFront();
+ }
+
+ //set move to back listener for items
+ moveToBack(){
+  this.currentActiveItem.sendToBack();
  }
 
   //shape draw distributor
@@ -577,6 +594,9 @@ class MyCanvas {
       case 'down':
         position.y += step;
         break; 
+      case 'delete':
+        this.currentActiveItem.remove();
+        break;
     }
     this.currentActiveItem.position = position;
   }
