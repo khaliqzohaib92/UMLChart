@@ -14,8 +14,6 @@ This app was built with Basic JavaScript and Paper.js. Please checkout a working
 ## Interactions
 Select a shape from side bar and text by pressing 'Ctrl + Mouse Double Click', use mouse/keyboard to move shapes around in the canvas. Use different lines to join the shapes and build a UML. User can also save a project and import it to continue working on same project.  
 
-## Features
-
 <h1 align="center">
   <img src="https://github.com/khaliqzohaib92/UMLChart/blob/master/project_gif/umlchart.gif" width="600" height="auto" align="center"/>
 </h1>
@@ -26,7 +24,7 @@ Select a shape from side bar and text by pressing 'Ctrl + Mouse Double Click', u
   <img src="https://github.com/khaliqzohaib92/UMLChart/blob/master/project_gif/umlchart_resize.gif" width="600" height="auto" align="center"/>
 </h1>
 
-After selecting a shape form the sidebar user can resize the shape by dragging the shape from any corner.
+After selecting a shape form the sidebar user can resize the shape by dragging the it from any corner.
 
 To implement this feature the directions were:
 
@@ -112,8 +110,8 @@ Rotating the lines head with a precise angle as user drag it around was challang
 
 Approach to solve this was:
 
-* Added small circles to three different points in the line shape to detect user interaction.
-* Rerendering line each rotation and finding a precise angle using JavaScipt's `Math.atan2` method. 
+* Add small circles to three different points in the line shape to detect user interaction.
+* Rerendering line at each rotation and finding a precise angle using JavaScipt's `Math.atan2` method. 
 
 ```javascript
 drawLineShape(startPoint, endPoint, lineType){
@@ -184,8 +182,6 @@ drawLineShape(startPoint, endPoint, lineType){
       }
     }
 
-    
-
     //rotate the head shape
     if(lineType !== SHAPES.DIVIDER)
       headShape.rotate(
@@ -232,10 +228,7 @@ drawLineShape(startPoint, endPoint, lineType){
 </h1>
 
 
-Next challange was to open the saved umlchart file in such a way that user can make change to the file. As of my research Paper.js importSVG only import the file as a group and doesn't allow you to edit the individual item.
-
-
-I wrote my own small piece of code to extract the items and add them indiviually to allow user to edit it.  
+Next challange was to open the saved umlchart file in such a way that edit it.
 
 
 ```javascript
