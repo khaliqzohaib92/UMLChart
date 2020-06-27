@@ -3,7 +3,9 @@ import paper, { Rectangle, Path, Point, Tool, PointText } from 'paper';
 import Sidebar from './scripts/sidebar/sidebar';
 import sidebarData from './scripts/util/sidebar_data'
 import MyCanvas from "./scripts/canvas/canvas";
-import Modal from "./scripts/modal/modal";
+import Info from "./scripts/intro/info";
+import { message } from "./scripts/intro/messsag";
+
 window.addEventListener("DOMContentLoaded", main =>{
     // canvas
     const canvasElement = document.getElementById('myCanvas');
@@ -17,6 +19,12 @@ window.addEventListener("DOMContentLoaded", main =>{
         sidebarData[0], 
         sidebarElement,
         myCanvas.drawShapes);
+
+
+    //info side bar
+    const infoSidebar = new Info("Tips", message);
+
+     
 });
 
 

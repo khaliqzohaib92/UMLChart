@@ -1,0 +1,34 @@
+#info-sidebar{
+    margin-top: 3.4%;
+    padding: 10px;
+    background: #0000001a;
+    border-radius: 3px;
+    margin-left: 12px;
+    width: 18%;
+    height: fit-content;
+    margin-right: 10px;
+}
+
+.top-bar-container{
+    display: flex;
+
+}
+
+.info-title{
+    width: 95%;
+    text-align: center;
+}
+
+.info-close{
+    cursor: pointer;
+}
+
+.info-body{
+    margin-top: 2%;
+}
+
+.info-body p{
+    margin-top: 7px;
+    font-size: 0.9em;
+    font-family: auto;
+}
