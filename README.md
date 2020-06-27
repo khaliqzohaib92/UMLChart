@@ -106,7 +106,7 @@ class MyCanvas {
   <img src="https://github.com/khaliqzohaib92/UMLChart/blob/master/project_gif/umlchart_line_rotate.gif" width="600" height="auto" align="center"/>
 </h1>
 
-Rotating the lines head with a precise angle as user drag it around was challanging because there was no detection of click on the line by Paper.js. 
+Rotating the lines head with a precise angle as user drag it around was challanging. 
 
 Approach to solve this was:
 
