@@ -223,7 +223,7 @@ class MyCanvas {
     //adds doubleclick listner to text
     textShape.onDoubleClick = (e)=>{
       //show modal to update text
-      if(textShape.selected){
+      if(textShape.bounds.selected){
         new Modal((updatedText)=>{
           textShape.content = updatedText;
         }).show();
@@ -533,7 +533,7 @@ class MyCanvas {
         this.currentActiveItem.bounds = new Rectangle(
           this.currentActiveItem.data.from,e.point);
       }
-      this.currentActiveItem.selected = true
+      this.currentActiveItem.bounds.selected = true
     } 
   }
 
@@ -554,7 +554,7 @@ class MyCanvas {
       if(child.contains(position)){
         clickedItems.push(child);
       } else {
-        child.selected =  false;
+        child.bounds.selected =  false;
       }
     })
     //return if no item is selected
@@ -567,11 +567,11 @@ class MyCanvas {
         latestItem = clickedItems[i];
       }else
       {
-        clickedItems[i].selected = false;
+        clickedItems[i].bounds.selected = false;
       }
     }
     this.currentActiveItem = latestItem;
-    latestItem.selected = true;
+    latestItem.bounds.selected = true;
   }
 
 
