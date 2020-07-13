@@ -15,7 +15,7 @@
 ## Introduction
 UMLChart is a canvas based UML diagram making tool. This will allow you to draw classes/modules, represent variables/methods and show connections. It is build using basic JavaScript and Paper.js. Please checkout live link here: [Live](https://khaliqzohaib92.github.io/UMLChart/)
 
-## Built With
+## Technologies
 * HTML5
 * SCSS 
 * JavaScript
