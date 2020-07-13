@@ -1,23 +1,46 @@
+## UMLChart
+
+## Version 1.0.0 - [Live](https://khaliqzohaib92.github.io/UMLChart/)
+
+## Contents
+- [Introduction](#introduction)
+- [Technologies](#technologies)
+- [Setup](#setup)
+- [Interactions](#interactions)
+- [Features](#features)
+  - [Shapes Resizing](#shapes-resizing)
+  - [Rotating Line Shapes](#rotating-line-shapes)
+  - [Opening a Saved File](#opening-a-saved-file)
+  
 ## Introduction
-UMLChart is a canvas based UML diagram making tool. This will allow you to draw classes/modules, represent variables/methods and show connections.
-
-## Demo
-This app was built with Basic JavaScript and Paper.js. Please checkout a working app here: https://khaliqzohaib92.github.io/UMLChart/
-
+UMLChart is a canvas based UML diagram making tool. This will allow you to draw classes/modules, represent variables/methods and show connections. It is build using basic JavaScript and Paper.js. Please checkout live link here: [Live](https://khaliqzohaib92.github.io/UMLChart/)
 
 ## Built With
-* HTML
+* HTML5
 * SCSS 
 * JavaScript
 * Paper.js
+* Webpack
+
+## Setup
+To run this project, clone it to your local machine and then run:
+```
+npm install
+```
+Tt will install all the front end dependencies. Then run:
+```
+npm start
+```
+This will run the node server and you can navigate to http://localhost:8080/ to view the web application locally.
 
 ## Interactions
-Select a shape from side bar and text by pressing 'Ctrl + Mouse Double Click', use mouse/keyboard to move shapes around in the canvas. Use different lines to join the shapes and build a UML. User can also save a project and import it to continue working on same project.  
+Select a shape from side bar and add text by pressing 'Ctrl + Mouse Double Click', use mouse/keyboard to move shapes around in the canvas. Use different lines to join the shapes and build a UML. You can also save a project and import it to continue working on the same.  
 
 <h1 align="center">
   <img src="https://github.com/khaliqzohaib92/UMLChart/blob/master/project_gif/umlchart.gif" width="600" height="auto" align="center"/>
 </h1>
 
+## Features
 
 ### Shapes Resizing
 <h1 align="center">
@@ -35,32 +58,9 @@ To implement this feature the directions were:
 ```javascript
 
 class MyCanvas {
-  constructor(canvasElement) {
-
-    //holds the current active item (item that user is interacting with)
-    this.currentActiveItem = null;
-
-    // sets up paper js on canvas
-    paper.setup(canvasElement);
-
-    //creates new project in paper
-    this.project = new Project(canvasElement)
-
-    
-    //tool level clicklistener
-    this.tool.onMouseDown = this.onToolMouseDown;
-  }
-
 
   //on item click
   onToolMouseDown(e){
-    
-    //check if the click was inside the shape
-    if(this.currentActiveItem.contains(e.point)){
-      //set data to currentAciveItem to be used in drag method
-      this.currentActiveItem.data.state = 'move'
-    }
-
     //checks if user hit any corner of the item
     if(this.currentActiveItem.hitTest(e.point, {bounds: true, tolerance: 5})){
       //get bounds of the item
@@ -87,10 +87,6 @@ class MyCanvas {
 
   //item drag listener
   onToolDrag(e){
-    if(this.currentActiveItem.data.state === 'move'){
-      //move the shape as user drag around
-      this.currentActiveItem.position = e.point;  
-    } else
     if(this.currentActiveItem.data.state === 'resize'){
       //resize the shape as user drag around
       this.currentActiveItem.bounds = new Rectangle(
@@ -155,32 +151,11 @@ drawLineShape(startPoint, endPoint, lineType){
 
     let arrowCenter = endPoint;
 
-    //based on line type draw shape
-    if(lineType !== SHAPES.DIVIDER){
-      const leftEdge = new Point(arrowCenter.x-10, arrowCenter.y-10);
-      const rightEdge = new Point(arrowCenter.x-10, arrowCenter.y+10);
-      headShape.add(leftEdge);
-      headShape.add(arrowCenter);
-      headShape.add(rightEdge);
-
-      if(lineType === SHAPES.AGGREGATION || lineType ===  SHAPES.COMPOSITION){
-        const bottomRightEdge = new Point(arrowCenter.x-20, arrowCenter.y);
-        const bottomLeftEdge = leftEdge;
-        headShape.add(bottomRightEdge);
-        headShape.add(bottomLeftEdge);
-
-        if(lineType === SHAPES.AGGREGATION){
-          headShape.strokeColor = 'white';
-          headShape.fillColor = 'white';
-          headShape.shadowColor = 'gray';
-          headShape.shadowOffset=1;
-        }
-
-        if(lineType === SHAPES.COMPOSITION){
-          headShape.fillColor = 'black';
-        }
-      }
-    }
+    const leftEdge = new Point(arrowCenter.x-10, arrowCenter.y-10);
+    const rightEdge = new Point(arrowCenter.x-10, arrowCenter.y+10);
+    headShape.add(leftEdge);
+    headShape.add(arrowCenter);
+    headShape.add(rightEdge);
 
     //rotate the head shape
     if(lineType !== SHAPES.DIVIDER)
@@ -191,8 +166,7 @@ drawLineShape(startPoint, endPoint, lineType){
     
     //add group to main group
     mainGroup.addChild(group);
-    if(lineType !== SHAPES.DIVIDER)
-      mainGroup.addChild(headShape);
+    mainGroup.addChild(headShape);
     mainGroup.data.type = LINE;
     mainGroup.data.lineType = lineType;
 
@@ -202,20 +176,15 @@ drawLineShape(startPoint, endPoint, lineType){
 
 //item drag listener
   onToolDrag(e){
-
-    if(this.currentActiveItem.data.state === 'move'){
-      this.currentActiveItem.position = e.point;  
-    } else
     if(this.currentActiveItem.data.state === 'resize'){
       if(this.currentActiveItem.data.type === LINE){
-        //shapes with type line, re-rendering line on each user move
+        //re-rendering line on each user move
         const lineStartPoint = this.currentActiveItem.firstChild.firstChild.segments[0].point;
         const lineType = this.currentActiveItem.data.lineType;
         this.currentActiveItem.remove();
         this.currentActiveItem =  this.drawLineShape(lineStartPoint, e.point, lineType);
         this.currentActiveItem.data.state = 'resize'
       }
-      this.currentActiveItem.selected = true
     } 
   }
 ```
