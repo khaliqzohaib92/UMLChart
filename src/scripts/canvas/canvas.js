@@ -7,6 +7,10 @@ import {getAngleDeg} from '../util/util';
 const boundsIdentifierObj = {
   1: 'topLeft', 2: 'topRight', 3: 'bottomRight', 0: 'bottomLeft'
 }
+
+const boundsCenterIdentifierObj = {
+  1: 'topCenter', 2: 'rightCenter', 3: 'bottomCenter', 0: 'LeftCenter'
+}
 const LINE = 'line'; 
 
 class MyCanvas {
@@ -71,6 +75,9 @@ class MyCanvas {
 
     //line attachement function binding
     this.checkLineAttachment = this.checkLineAttachment.bind(this);
+
+    //line render function
+    this.reRenderLine = this.reRenderLine.bind(this);
 
     this.setMenuClickListener();
   }
@@ -526,12 +533,9 @@ class MyCanvas {
     if(this.currentActiveItem.data.state === 'resize'){
       if(this.currentActiveItem.data.type === LINE){
         //shapes with type line, re-rendering line on each user move
-        const lineStartPoint = this.currentActiveItem.firstChild.firstChild.segments[0].point;
-        const lineType = this.currentActiveItem.data.lineType;
-        this.currentActiveItem.remove();
-        this.currentActiveItem =  this.drawLineShape(lineStartPoint, e.point, lineType);
-        this.checkLineAttachment(e.point);
-        this.currentActiveItem.data.state = 'resize'
+        this.reRenderLine(e);
+        
+        this.checkLineAttachment(e);
       }else{
         //shapes other than line, updating the bounds
         this.currentActiveItem.bounds = new Rectangle(
@@ -541,14 +545,34 @@ class MyCanvas {
     } 
   }
 
+  reRenderLine(e){
+    const lineStartPoint = this.currentActiveItem.firstChild.firstChild.segments[0].point;
+    const lineType = this.currentActiveItem.data.lineType;
+    this.currentActiveItem.remove();
+    this.currentActiveItem =  this.drawLineShape(lineStartPoint, e.point, lineType);
+    this.currentActiveItem.data.state = 'resize'
+  }
+
   // attach line to shapes
-  checkLineAttachment(endPoint) {
+  checkLineAttachment(event) {
     //iteratethough each element to find the intresecting shape
     this.project.activeLayer.children.forEach(child=>{
       // find the shapes that line intersected with
-      if(child != this.currentActiveItem && child.hitTest(endPoint, {bounds: true, tolerance: 5})){
+      if(child != this.currentActiveItem && child.hitTest(event.point, {bounds: true, tolerance: 5})){
+
+        const bounds = this.currentActiveItem.bounds;
+        debugger
         //itrating to find the exact bound point
-       
+        for(let[key, value] of Object.entries(boundsIdentifierObj)){
+          if(bounds[value].isClose(event.point, 5)){
+            //get current bound point
+            const currentPoint = new Point(bounds[value].x, bounds[value].y);
+            event.point = currentPoint;
+            debugger
+            this.reRenderLine(event);
+            break;
+          }
+        }
       }
     })
   }
