@@ -69,6 +69,9 @@ class MyCanvas {
     //set right menu liteners
     this.setMenuClickListener = this.setMenuClickListener.bind(this);
 
+    //line attachement function binding
+    this.checkLineAttachment = this.checkLineAttachment.bind(this);
+
     this.setMenuClickListener();
   }
 
@@ -527,6 +530,7 @@ class MyCanvas {
         const lineType = this.currentActiveItem.data.lineType;
         this.currentActiveItem.remove();
         this.currentActiveItem =  this.drawLineShape(lineStartPoint, e.point, lineType);
+        this.checkLineAttachment(e.point);
         this.currentActiveItem.data.state = 'resize'
       }else{
         //shapes other than line, updating the bounds
@@ -535,6 +539,18 @@ class MyCanvas {
       }
       this.currentActiveItem.bounds.selected = true
     } 
+  }
+
+  // attach line to shapes
+  checkLineAttachment(endPoint) {
+    //iteratethough each element to find the intresecting shape
+    this.project.activeLayer.children.forEach(child=>{
+      // find the shapes that line intersected with
+      if(child != this.currentActiveItem && child.hitTest(endPoint, {bounds: true, tolerance: 5})){
+        //itrating to find the exact bound point
+       
+      }
+    })
   }
 
   //on tool double click
