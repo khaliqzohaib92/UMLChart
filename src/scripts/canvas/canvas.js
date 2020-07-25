@@ -7,6 +7,10 @@ import {getAngleDeg} from '../util/util';
 const boundsIdentifierObj = {
   1: 'topLeft', 2: 'topRight', 3: 'bottomRight', 0: 'bottomLeft'
 }
+
+const boundsCenterIdentifierObj = {
+  1: 'topCenter', 2: 'rightCenter', 3: 'bottomCenter', 0: 'leftCenter'
+}
 const LINE = 'line'; 
 
 class MyCanvas {
@@ -68,6 +72,12 @@ class MyCanvas {
 
     //set right menu liteners
     this.setMenuClickListener = this.setMenuClickListener.bind(this);
+
+    //line attachement function binding
+    this.checkLineAttachment = this.checkLineAttachment.bind(this);
+
+    //line render function
+    this.reRenderLine = this.reRenderLine.bind(this);
 
     this.setMenuClickListener();
   }
@@ -317,7 +327,7 @@ class MyCanvas {
       mainGroup.addChild(headShape);
     mainGroup.data.type = LINE;
     mainGroup.data.lineType = lineType;
-
+    mainGroup.data.lineId = Date.now();
     return mainGroup;
   }
 
@@ -462,12 +472,12 @@ class MyCanvas {
             //get opposite bound point
             const oppositePoint = new Point(oppositeBound.x,oppositeBound.y);
             //get current bound point
-            const currentPoint = new Point(bounds[value].x, bounds[value].y);
+            const centerPoint = new Point(bounds[value].x, bounds[value].y);
 
             //set shape data to be used for resizing later
             this.currentActiveItem.data.state = 'resize'
             this.currentActiveItem.data.from = oppositePoint;
-            this.currentActiveItem.data.to = currentPoint;
+            this.currentActiveItem.data.to = centerPoint;
             break;
           }
         }
@@ -519,15 +529,28 @@ class MyCanvas {
 
     if(this.currentActiveItem.data.state === 'move'){
       this.currentActiveItem.position = e.point;  
+      
+      //check if the shape has any attached lines
+      if(this.currentActiveItem.data.lineShape){
+        const lineShapeObject = this.currentActiveItem.data.lineShape;
+        for (let [key, value] of Object.entries(lineShapeObject)) {
+          const element = value[1];
+          const lineStartPoint = element.firstChild.firstChild.segments[0].point;
+          const lineType = element.data.lineType;
+          const lineId = element.data.lineId;
+          element.remove();
+         element = this.drawLineShape(lineStartPoint, this.currentActiveItem.bounds[value[0]], lineType);
+         element.data.lineId = lineId; 
+         lineShapeObject[key] = [value[0], element]
+        }
+      }
     } else
     if(this.currentActiveItem.data.state === 'resize'){
       if(this.currentActiveItem.data.type === LINE){
         //shapes with type line, re-rendering line on each user move
-        const lineStartPoint = this.currentActiveItem.firstChild.firstChild.segments[0].point;
-        const lineType = this.currentActiveItem.data.lineType;
-        this.currentActiveItem.remove();
-        this.currentActiveItem =  this.drawLineShape(lineStartPoint, e.point, lineType);
-        this.currentActiveItem.data.state = 'resize'
+        this.reRenderLine(e.point);
+        
+        this.checkLineAttachment(e);
       }else{
         //shapes other than line, updating the bounds
         this.currentActiveItem.bounds = new Rectangle(
@@ -535,6 +558,53 @@ class MyCanvas {
       }
       this.currentActiveItem.bounds.selected = true
     } 
+  }
+
+  reRenderLine(headPosition){
+    const lineStartPoint = this.currentActiveItem.firstChild.firstChild.segments[0].point;
+    const lineType = this.currentActiveItem.data.lineType;
+    const lineId = this.currentActiveItem.data.lineId;
+    this.currentActiveItem.remove();
+    this.currentActiveItem =  this.drawLineShape(lineStartPoint, headPosition, lineType);
+    this.currentActiveItem.data.state = 'resize'
+    this.currentActiveItem.data.lineId = lineId;
+  }
+
+  // attach line to shapes
+  checkLineAttachment(event) {
+    //iteratethough each element to find the intresecting shape
+    this.project.activeLayer.children.forEach(child=>{
+      // find the shapes that line intersected with
+      if(child != this.currentActiveItem && child.hitTest(event.point, {bounds: true, tolerance: 5})){
+        //add line to attached shapes
+
+        const bounds = child.bounds;
+        //itrating to find the exact bound point
+        for(let[key, value] of Object.entries(boundsCenterIdentifierObj)){
+          if(bounds[value].isClose(event.point, 5)){
+            //get center bound point of the side line touches
+            const centerPoint = new Point(bounds[value].x, bounds[value].y);
+            this.reRenderLine(centerPoint);
+
+            //set data to shape to allow shape to move line head with it as it is dragged
+
+            // check if the lineShape already exists
+            if(!child.data.lineShape) {
+              child.data.lineShape = {}
+            }
+
+            // add line currentActive Line Shape and also the side it is attached with
+            child.data.lineShape[this.currentActiveItem.data.lineId] = [value, this.currentActiveItem];
+            break;
+          }
+        }
+      } else {
+        //remove line attachement with shapes
+        if(child.data.lineShape){
+          delete child.data.lineShape[this.currentActiveItem.data.lineId];
+        }
+      }
+    })
   }
 
   //on tool double click
