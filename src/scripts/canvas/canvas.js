@@ -472,12 +472,12 @@ class MyCanvas {
             //get opposite bound point
             const oppositePoint = new Point(oppositeBound.x,oppositeBound.y);
             //get current bound point
-            const currentPoint = new Point(bounds[value].x, bounds[value].y);
+            const centerPoint = new Point(bounds[value].x, bounds[value].y);
 
             //set shape data to be used for resizing later
             this.currentActiveItem.data.state = 'resize'
             this.currentActiveItem.data.from = oppositePoint;
-            this.currentActiveItem.data.to = currentPoint;
+            this.currentActiveItem.data.to = centerPoint;
             break;
           }
         }
@@ -529,11 +529,24 @@ class MyCanvas {
 
     if(this.currentActiveItem.data.state === 'move'){
       this.currentActiveItem.position = e.point;  
+      
+      //check if the shape has any attached lines
+      if(this.currentActiveItem.data.lineShape){
+        const lineShapeArray = this.currentActiveItem.data.lineShape;
+        for (let i = 0; i < lineShapeArray.length; i++) {
+          const element = lineShapeArray[i][1];
+          const lineStartPoint = element.firstChild.firstChild.segments[0].point;
+          const lineType = element.data.lineType;
+          element.remove();
+         element = this.drawLineShape(lineStartPoint, this.currentActiveItem.bounds[lineShapeArray[i][0]], lineType);
+          lineShapeArray[i] = [lineShapeArray[i][0], element]
+        }
+      }
     } else
     if(this.currentActiveItem.data.state === 'resize'){
       if(this.currentActiveItem.data.type === LINE){
         //shapes with type line, re-rendering line on each user move
-        this.reRenderLine(e);
+        this.reRenderLine(e.point);
         
         this.checkLineAttachment(e);
       }else{
@@ -545,11 +558,11 @@ class MyCanvas {
     } 
   }
 
-  reRenderLine(e){
+  reRenderLine(headPosition){
     const lineStartPoint = this.currentActiveItem.firstChild.firstChild.segments[0].point;
     const lineType = this.currentActiveItem.data.lineType;
     this.currentActiveItem.remove();
-    this.currentActiveItem =  this.drawLineShape(lineStartPoint, e.point, lineType);
+    this.currentActiveItem =  this.drawLineShape(lineStartPoint, headPosition, lineType);
     this.currentActiveItem.data.state = 'resize'
   }
 
@@ -565,9 +578,19 @@ class MyCanvas {
         for(let[key, value] of Object.entries(boundsCenterIdentifierObj)){
           if(bounds[value].isClose(event.point, 5)){
             //get center bound point of the side line touches
-            const currentPoint = new Point(bounds[value].x, bounds[value].y);
-            event.point = currentPoint;
-            this.reRenderLine(event);
+            const centerPoint = new Point(bounds[value].x, bounds[value].y);
+            this.reRenderLine(centerPoint);
+
+            //set data to shape to allow shape to move line head with it as it is dragged
+
+            // check if the lineShape already exists
+            if(!child.data.lineShape) {
+              child.data.lineShape = new Array();
+            }
+
+            // add line currentActive Line Shape and also the side it is attached with
+            if(!child.data.lineShape.includes([value, this.currentActiveItem]))
+              child.data.lineShape.push([value, this.currentActiveItem]);
             break;
           }
         }
