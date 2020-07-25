@@ -9,7 +9,7 @@ const boundsIdentifierObj = {
 }
 
 const boundsCenterIdentifierObj = {
-  1: 'topCenter', 2: 'rightCenter', 3: 'bottomCenter', 0: 'LeftCenter'
+  1: 'topCenter', 2: 'rightCenter', 3: 'bottomCenter', 0: 'leftCenter'
 }
 const LINE = 'line'; 
 
@@ -560,15 +560,13 @@ class MyCanvas {
       // find the shapes that line intersected with
       if(child != this.currentActiveItem && child.hitTest(event.point, {bounds: true, tolerance: 5})){
 
-        const bounds = this.currentActiveItem.bounds;
-        debugger
+        const bounds = child.bounds;
         //itrating to find the exact bound point
-        for(let[key, value] of Object.entries(boundsIdentifierObj)){
+        for(let[key, value] of Object.entries(boundsCenterIdentifierObj)){
           if(bounds[value].isClose(event.point, 5)){
-            //get current bound point
+            //get center bound point of the side line touches
             const currentPoint = new Point(bounds[value].x, bounds[value].y);
             event.point = currentPoint;
-            debugger
             this.reRenderLine(event);
             break;
           }
