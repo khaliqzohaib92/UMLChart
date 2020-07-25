@@ -541,7 +541,7 @@ class MyCanvas {
           element.remove();
          element = this.drawLineShape(lineStartPoint, this.currentActiveItem.bounds[value[0]], lineType);
          element.data.lineId = lineId; 
-         value[key] = [value[0], element]
+         lineShapeObject[key] = [value[0], element]
         }
       }
     } else
