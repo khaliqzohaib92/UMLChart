@@ -327,7 +327,7 @@ class MyCanvas {
       mainGroup.addChild(headShape);
     mainGroup.data.type = LINE;
     mainGroup.data.lineType = lineType;
-
+    mainGroup.data.lineId = Date.now();
     return mainGroup;
   }
 
@@ -532,14 +532,16 @@ class MyCanvas {
       
       //check if the shape has any attached lines
       if(this.currentActiveItem.data.lineShape){
-        const lineShapeArray = this.currentActiveItem.data.lineShape;
-        for (let i = 0; i < lineShapeArray.length; i++) {
-          const element = lineShapeArray[i][1];
+        const lineShapeObject = this.currentActiveItem.data.lineShape;
+        for (let [key, value] of Object.entries(lineShapeObject)) {
+          const element = value[1];
           const lineStartPoint = element.firstChild.firstChild.segments[0].point;
           const lineType = element.data.lineType;
+          const lineId = this.currentActiveItem.data.lineId;
           element.remove();
-         element = this.drawLineShape(lineStartPoint, this.currentActiveItem.bounds[lineShapeArray[i][0]], lineType);
-          lineShapeArray[i] = [lineShapeArray[i][0], element]
+         element = this.drawLineShape(lineStartPoint, this.currentActiveItem.bounds[value[0]], lineType);
+         element.data.lineId = lineId; 
+         value[key] = [value[0], element]
         }
       }
     } else
@@ -561,9 +563,11 @@ class MyCanvas {
   reRenderLine(headPosition){
     const lineStartPoint = this.currentActiveItem.firstChild.firstChild.segments[0].point;
     const lineType = this.currentActiveItem.data.lineType;
+    const lineId = this.currentActiveItem.data.lineId;
     this.currentActiveItem.remove();
     this.currentActiveItem =  this.drawLineShape(lineStartPoint, headPosition, lineType);
     this.currentActiveItem.data.state = 'resize'
+    this.currentActiveItem.data.lineId = lineId;
   }
 
   // attach line to shapes
@@ -576,7 +580,7 @@ class MyCanvas {
         const bounds = child.bounds;
         //itrating to find the exact bound point
         for(let[key, value] of Object.entries(boundsCenterIdentifierObj)){
-          if(bounds[value].isClose(event.point, 5)){
+          if(bounds[value].isClose(event.point, 10)){
             //get center bound point of the side line touches
             const centerPoint = new Point(bounds[value].x, bounds[value].y);
             this.reRenderLine(centerPoint);
@@ -585,12 +589,11 @@ class MyCanvas {
 
             // check if the lineShape already exists
             if(!child.data.lineShape) {
-              child.data.lineShape = new Array();
+              child.data.lineShape = {}
             }
 
             // add line currentActive Line Shape and also the side it is attached with
-            if(!child.data.lineShape.includes([value, this.currentActiveItem]))
-              child.data.lineShape.push([value, this.currentActiveItem]);
+            child.data.lineShape[this.currentActiveItem.data.lineId] = [value, this.currentActiveItem];
             break;
           }
         }
