@@ -537,7 +537,7 @@ class MyCanvas {
           const element = value[1];
           const lineStartPoint = element.firstChild.firstChild.segments[0].point;
           const lineType = element.data.lineType;
-          const lineId = this.currentActiveItem.data.lineId;
+          const lineId = element.data.lineId;
           element.remove();
          element = this.drawLineShape(lineStartPoint, this.currentActiveItem.bounds[value[0]], lineType);
          element.data.lineId = lineId; 
@@ -576,11 +576,12 @@ class MyCanvas {
     this.project.activeLayer.children.forEach(child=>{
       // find the shapes that line intersected with
       if(child != this.currentActiveItem && child.hitTest(event.point, {bounds: true, tolerance: 5})){
+        //add line to attached shapes
 
         const bounds = child.bounds;
         //itrating to find the exact bound point
         for(let[key, value] of Object.entries(boundsCenterIdentifierObj)){
-          if(bounds[value].isClose(event.point, 10)){
+          if(bounds[value].isClose(event.point, 5)){
             //get center bound point of the side line touches
             const centerPoint = new Point(bounds[value].x, bounds[value].y);
             this.reRenderLine(centerPoint);
