@@ -598,6 +598,11 @@ class MyCanvas {
             break;
           }
         }
+      } else {
+        //remove line attachement with shapes
+        if(child.data.lineShape){
+          delete child.data.lineShape[this.currentActiveItem.data.lineId];
+        }
       }
     })
   }
