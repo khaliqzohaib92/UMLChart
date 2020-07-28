@@ -4,7 +4,7 @@ import Sidebar from './scripts/sidebar/sidebar';
 import sidebarData from './scripts/util/sidebar_data'
 import MyCanvas from "./scripts/canvas/canvas";
 import Info from "./scripts/intro/info";
-import { message } from "./scripts/intro/messsag";
+import { message } from "./scripts/intro/message";
 
 window.addEventListener("DOMContentLoaded", main =>{
     // canvas
